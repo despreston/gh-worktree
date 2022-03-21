@@ -3,12 +3,17 @@ package worktree
 import (
 	"fmt"
 
-	ghapi "github.com/cli/go-gh/pkg/api"
+	"github.com/cli/go-gh"
 	"github.com/despreston/gh-worktree/internal/worktree/commands/pr"
 	"github.com/spf13/cobra"
 )
 
-func New(restClient ghapi.RESTClient) *cobra.Command {
+func New() (*cobra.Command, error) {
+	rest, err := gh.RESTClient(nil)
+	if err != nil {
+		return nil, err
+	}
+
 	var rootCmd = &cobra.Command{
 		Use:   "worktree",
 		Short: "Git worktrees, dawg",
@@ -18,6 +23,6 @@ func New(restClient ghapi.RESTClient) *cobra.Command {
 		},
 	}
 
-	rootCmd.AddCommand(pr.New(restClient))
-	return rootCmd
+	rootCmd.AddCommand(pr.New(rest))
+	return rootCmd, nil
 }
