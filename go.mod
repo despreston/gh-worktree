@@ -1,4 +1,4 @@
-module github.com/despreston/gh-workspace
+module github.com/despreston/gh-worktree
 
 go 1.18
 

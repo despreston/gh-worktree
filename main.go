@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/cli/go-gh"
-	"github.com/despreston/gh-workspace/internal/workspace"
+	"github.com/despreston/gh-worktree/internal/worktree"
 )
 
 func main() {
@@ -15,7 +15,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd := workspace.New(rest)
+	cmd := worktree.New(rest)
 	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
