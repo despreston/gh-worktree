@@ -14,7 +14,7 @@ import (
 
 func New(restClient ghapi.RESTClient) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "pr",
+		Use:   "pr [pr number] <path>",
 		Short: "worktree from PR",
 		Long:  "Create a new worktree from a PR number",
 		Args: func(cmd *cobra.Command, args []string) error {
@@ -34,8 +34,12 @@ func New(restClient ghapi.RESTClient) *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("hell yeah brother %+v\n", branchName)
-			return createWorktree(branchName)
+			path := branchName
+			if len(args) > 1 {
+				path = args[1]
+			}
+
+			return createWorktree(branchName, path)
 		},
 	}
 
@@ -57,8 +61,8 @@ func getPullRequest(rc ghapi.RESTClient, owner, repo, pr string) (string, error)
 	return response.Head.Ref, nil
 }
 
-func createWorktree(branchName string) error {
-	cmdList := []string{"git", "worktree", "add", branchName}
+func createWorktree(branchName string, path string) error {
+	cmdList := []string{"git", "worktree", "add", path, branchName}
 
 	exe, err := safeexec.LookPath(cmdList[0])
 	if err != nil {
