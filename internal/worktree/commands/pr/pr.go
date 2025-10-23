@@ -39,7 +39,8 @@ func New(restClient ghapi.RESTClient) *cobra.Command {
 				path = args[1]
 			}
 
-			return createWorktree(branchName, path)
+			prNumber := args[0]
+			return createWorktreeFromPR(prNumber, branchName, path)
 		},
 	}
 
@@ -61,17 +62,29 @@ func getPullRequest(rc ghapi.RESTClient, owner, repo, pr string) (string, error)
 	return response.Head.Ref, nil
 }
 
-func createWorktree(branchName string, path string) error {
-	cmdList := []string{"git", "worktree", "add", path, branchName}
+func createWorktreeFromPR(prNumber, branchName string, path string) error {
+	// First, fetch the PR ref from GitHub
+	fetchCmd := []string{"git", "fetch", "origin", fmt.Sprintf("pull/%s/head:%s", prNumber, branchName)}
 
-	exe, err := safeexec.LookPath(cmdList[0])
+	exe, err := safeexec.LookPath(fetchCmd[0])
 	if err != nil {
 		return err
 	}
 
-	cmd := exec.Command(exe, cmdList[1:]...)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	fetch := exec.Command(exe, fetchCmd[1:]...)
+	fetch.Stdout = os.Stdout
+	fetch.Stderr = os.Stderr
 
-	return cmd.Run()
+	if err := fetch.Run(); err != nil {
+		return fmt.Errorf("failed to fetch PR: %w", err)
+	}
+
+	// Now create the worktree from the fetched branch
+	worktreeCmd := []string{"git", "worktree", "add", path, branchName}
+
+	worktree := exec.Command(exe, worktreeCmd[1:]...)
+	worktree.Stdout = os.Stdout
+	worktree.Stderr = os.Stderr
+
+	return worktree.Run()
 }
